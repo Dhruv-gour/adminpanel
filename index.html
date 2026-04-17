@@ -1180,7 +1180,7 @@
       .stats-grid {
         grid-template-columns: 1fr;
       }
-      
+
       .topbar {
         padding: 16px 20px;
       }
@@ -1389,9 +1389,7 @@
                   <select class="form-select" id="pdfClass">
                     <option value="">— Select Class —</option>
                     <option value="all">📢 All Classes</option>
-                    <option value="6">Class 6</option>
-                    <option value="7">Class 7</option>
-                    <option value="8">Class 8</option>
+
                     <option value="9">Class 9</option>
                     <option value="10">Class 10</option>
                     <option value="11">Class 11</option>
@@ -1452,9 +1450,7 @@
                   onchange="filterPdfs()">
                   <option value="">All Classes</option>
                   <option value="all">All Classes (broadcast)</option>
-                  <option value="6">Class 6</option>
-                  <option value="7">Class 7</option>
-                  <option value="8">Class 8</option>
+
                   <option value="9">Class 9</option>
                   <option value="10">Class 10</option>
                   <option value="11">Class 11</option>
@@ -1491,9 +1487,7 @@
                     <select class="form-select" id="notifClass">
                       <option value="">— Select Class —</option>
                       <option value="all">📢 All Classes</option>
-                      <option value="6">Class 6</option>
-                      <option value="7">Class 7</option>
-                      <option value="8">Class 8</option>
+
                       <option value="9">Class 9</option>
                       <option value="10">Class 10</option>
                       <option value="11">Class 11</option>
@@ -1538,9 +1532,7 @@
                 <select class="form-select" id="studentClassFilter" style="width:140px;padding:8px 12px;"
                   onchange="filterStudents()">
                   <option value="">All Classes</option>
-                  <option value="6">Class 6</option>
-                  <option value="7">Class 7</option>
-                  <option value="8">Class 8</option>
+
                   <option value="9">Class 9</option>
                   <option value="10">Class 10</option>
                   <option value="11">Class 11</option>
@@ -1733,7 +1725,7 @@
       // This saves 3 full collection reads every time the dashboard is viewed.
       const userCount = allStudents.length;
       const pdfCount = allPdfs.length;
-      
+
       document.getElementById('stat-total').textContent = userCount;
       document.getElementById('stat-pdfs').textContent = pdfCount;
       document.getElementById('stat-classes').textContent = [...new Set(allStudents.map(u => u.class).filter(Boolean))].length;
@@ -1762,13 +1754,13 @@
         cd.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">No data yet</div></div>';
       } else {
         const max = Math.max(...Object.values(dist), 1);
-        cd.innerHTML = Object.entries(dist).sort((a,b)=>Number(a[0])-Number(b[0])).map(([cls,cnt])=>`
+        cd.innerHTML = Object.entries(dist).sort((a, b) => Number(a[0]) - Number(b[0])).map(([cls, cnt]) => `
           <div style="margin-bottom:12px;">
             <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
               <span style="font-weight:600;">Class ${cls}</span><span style="color:var(--muted);">${cnt} students</span>
             </div>
             <div style="background:var(--surface2);border-radius:4px;height:6px;">
-              <div style="background:var(--accent);border-radius:4px;height:100%;width:${(cnt/max*100).toFixed(0)}%;transition:width .5s;"></div>
+              <div style="background:var(--accent);border-radius:4px;height:100%;width:${(cnt / max * 100).toFixed(0)}%;transition:width .5s;"></div>
             </div>
           </div>`).join('');
       }
@@ -1877,7 +1869,7 @@
 
         // Optimally update local lists instead of re-fetching everything
         const newDoc = {
-          id: docRef.id, title, description: desc, targetClass: cls, 
+          id: docRef.id, title, description: desc, targetClass: cls,
           fileURL: downloadURL, cloudinaryId: cloudinaryId,
           uploadedAt: { toDate: () => new Date() }, // Mock for instant UI
           uploadedBy: auth.currentUser.email,
@@ -1898,7 +1890,7 @@
           progressFill.style.width = '0';
           statusEl.style.display = 'none';
           btn.disabled = false; spinner.style.display = 'none';
-          
+
           // Refresh ONLY current screen UI, no new network reads!
           renderPdfs(allPdfs); loadDashboard();
         }, 1800);
@@ -1982,21 +1974,21 @@
       try {
         // 1) Delete from class_pdfs
         await db.collection('class_pdfs').doc(deletePdfTarget.id).delete();
-        
+
         // 2) Delete related notifications automatically
         const notifSnap = await db.collection('adminNotifications')
-                                  .where('pdfId', '==', deletePdfTarget.id)
-                                  .get();
-        
+          .where('pdfId', '==', deletePdfTarget.id)
+          .get();
+
         const deletePromises = notifSnap.docs.map(doc => doc.ref.delete());
         await Promise.all(deletePromises);
 
         // Note: Actual Cloudinary file deletion is not done here 
         // because it requires a secure backend API secret.
-        
+
         // Update local state instantly to save reads
         allPdfs = allPdfs.filter(p => p.id !== deletePdfTarget.id);
-        
+
         document.getElementById('deletePdfModal').classList.remove('open');
         showToast('PDF deleted locally', 'success');
         renderPdfs(allPdfs); loadDashboard();
